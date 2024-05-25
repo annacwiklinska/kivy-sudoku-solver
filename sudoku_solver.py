@@ -1,83 +1,64 @@
 class SudokuSolver:
-    def __init__(self):
-        self.grid = [[0 for _ in range(9)] for _ in range(9)]
+    def __init__(self, board):
+        self.board = board
 
-    def print_grid(self):
-        for i in range(9):
-            for j in range(9):
-                print(self.grid[i][j], end=" ")
-            print()
+    def is_valid(self, row, col, num):
+        # Check if the number is not in the given row
+        for x in range(9):
+            if self.board[row][x] == num:
+                return False
 
-    def find_empty_location(self, l):
-        for row in range(9):
-            for col in range(9):
-                if self.grid[row][col] == 0:
-                    l[0] = row
-                    l[1] = col
-                    return True
-        return False
+        # Check if the number is not in the given column
+        for x in range(9):
+            if self.board[x][col] == num:
+                return False
 
-    def used_in_row(self, row, num):
-        for i in range(9):
-            if self.grid[row][i] == num:
-                return True
-        return False
-
-    def used_in_col(self, col, num):
-        for i in range(9):
-            if self.grid[i][col] == num:
-                return True
-        return False
-
-    def used_in_box(self, row, col, num):
+        # Check if the number is not in the 3x3 subgrid
+        start_row, start_col = 3 * (row // 3), 3 * (col // 3)
         for i in range(3):
             for j in range(3):
-                if self.grid[i + row][j + col] == num:
-                    return True
-        return False
+                if self.board[start_row + i][start_col + j] == num:
+                    return False
 
-    def check_location_is_safe(self, row, col, num):
-        return not self.used_in_row(row, num) and (
-            not self.used_in_col(col, num)
-            and (not self.used_in_box(row - row % 3, col - col % 3, num))
-        )
+        return True
+
+    def is_initial_board_valid(self):
+        # Check all cells for validity
+        for row in range(9):
+            for col in range(9):
+                num = self.board[row][col]
+                if num not in range(10):
+                    return False
+                if num != 0:
+                    self.board[row][col] = 0  # Temporarily empty the cell
+                    if not self.is_valid(row, col, num):
+                        return False
+                    self.board[row][col] = num  # Restore the cell
+        return True
 
     def solve_sudoku(self):
-        l = [0, 0]
-        if not self.find_empty_location(l):
-            return True
+        empty_spot = self.find_empty_location()
+        if not empty_spot:
+            return True  # No empty spot means the board is solved
 
-        row = l[0]
-        col = l[1]
+        row, col = empty_spot
 
         for num in range(1, 10):
-            if self.check_location_is_safe(row, col, num):
-                self.grid[row][col] = num
-
+            if self.is_valid(row, col, num):
+                self.board[row][col] = num
                 if self.solve_sudoku():
                     return True
-
-                self.grid[row][col] = 0
+                self.board[row][col] = 0  # Undo the current cell for backtracking
 
         return False
 
+    def find_empty_location(self):
+        for i in range(9):
+            for j in range(9):
+                if self.board[i][j] == 0:
+                    return (i, j)
+        return None
 
-# test
-
-solver = SudokuSolver()
-solver.grid = [
-    [3, 0, 6, 5, 0, 8, 4, 0, 0],
-    [5, 2, 0, 0, 0, 0, 0, 0, 0],
-    [0, 8, 7, 0, 0, 0, 0, 3, 1],
-    [0, 0, 3, 0, 0, 0, 1, 8, 0],
-    [9, 0, 0, 8, 6, 3, 0, 0, 5],
-    [0, 5, 0, 0, 9, 0, 6, 0, 0],
-    [1, 3, 0, 0, 0, 0, 2, 5, 0],
-    [0, 0, 0, 0, 0, 0, 0, 7, 4],
-    [0, 0, 5, 2, 0, 6, 3, 0, 0],
-]
-
-if solver.solve_sudoku():
-    solver.print_grid()
-else:
-    print("No solution exists")
+    def print_board(self):
+        for row in self.board:
+            print(" ".join(str(num) if num != 0 else "." for num in row))
