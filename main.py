@@ -1,42 +1,9 @@
 from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from kivy.uix.screenmanager import Screen, ScreenManager
-from plyer import camera
+from kivy.uix.screenmanager import ScreenManager
 
-from choose_picture_screen import ChoosePictureScreen
-from manual_input_screen import ManualInputScreen
-from menu_screen import MenuScreen
-
-
-class TakePhotoScreen(Screen):
-    def __init__(self, **kwargs):
-        super(TakePhotoScreen, self).__init__(**kwargs)
-        layout = BoxLayout(orientation="vertical")
-
-        take_photo_button = Button(text="Zrób zdjęcie", size_hint=(1, 0.1))
-        take_photo_button.bind(on_press=self.take_photo)
-        layout.add_widget(take_photo_button)
-
-        self.add_widget(layout)
-
-    def take_photo(self, instance):
-        camera.take_picture(on_complete=self.picture_taken, filename="sudoku.jpg")
-
-    def picture_taken(self, path):
-        if path:
-            # preprocess the image
-            preprocessed = self.preprocess_image(path)
-            # Here you would process the image with the model
-            self.recognize_digits(preprocessed)
-
-    def preprocess_image(self, image):
-        # Here you would preprocess the image before digit recognition
-        pass
-
-    def recognize_digits(self, image):
-        # Here you would recognize the digits in the image
-        pass
+from screen_views.choose_picture_screen import ChoosePictureScreen
+from screen_views.manual_input_screen import ManualInputScreen
+from screen_views.menu_screen import MenuScreen
 
 
 class SudokuApp(App):
@@ -44,7 +11,6 @@ class SudokuApp(App):
         sm = ScreenManager()
         sm.add_widget(MenuScreen(name="menu"))
         sm.add_widget(ManualInputScreen(name="manual"))
-        sm.add_widget(TakePhotoScreen(name="camera"))
         sm.add_widget(ChoosePictureScreen(name="choose"))
         return sm
 
