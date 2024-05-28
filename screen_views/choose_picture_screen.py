@@ -5,6 +5,8 @@ from kivy.uix.label import Label
 from kivy.uix.screenmanager import Screen
 from plyer import filechooser
 
+from image_preprocessing import ImagePreprocessor
+
 
 class ChoosePictureScreen(Screen):
     def __init__(self, **kwargs):
@@ -75,14 +77,12 @@ class ChoosePictureScreen(Screen):
     def file_chosen(self, selection):
         if selection:
             print(selection)
-            preprocessed = self.preprocess_image(selection[0])
-            self.recognize_digits(preprocessed)
+            digits = self.preprocess_image(selection[0])
+            # self.recognize_digits(preprocessed)
 
-    def preprocess_image(self, image):
-        print("im preprocessing")
-
-    def recognize_digits(self, image):
-        print("im recognizing")
+    def image_prep_and_recognition(self, image_path):
+        preprocessor = ImagePreprocessor("model_4.pkl")
+        preprocessor.process_image(image_path)
 
     def go_back(self, instance):
         self.manager.current = "menu"

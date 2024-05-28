@@ -121,7 +121,7 @@ class ImagePreprocessor:
                 cell = cell[10:-10, 10:-10]
                 # for _ in range(2):
                 self.remove_small_white_spots(cell)
-                cell = cv2.medianBlur(cell, 9)
+                # cell = cv2.medianBlur(cell, 9)
                 _, cell = cv2.threshold(
                     cell, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
                 )
@@ -129,7 +129,7 @@ class ImagePreprocessor:
 
         cells_image = np.array(cells)
         img = np.vstack([np.hstack(cells_image[i * 9 : (i + 1) * 9]) for i in range(9)])
-        cv2.imwrite("cells.png", img)
+        # cv2.imwrite("cells.png", img)
         return cells, img
 
     def is_mostly_black(self, cell, threshold=0.99):
@@ -140,27 +140,23 @@ class ImagePreprocessor:
             or np.count_nonzero(cell[:, 0]) > 0
             or np.count_nonzero(cell[:, -1]) > 0
         ):
-            # Find all white spots using connected components labeling
             num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
                 cell, connectivity=8
             )
 
-            # Calculate the size of the image
             image_size = cell.shape[0] * cell.shape[1]
 
-            # Define the threshold for the white spot size
             white_spot_threshold = image_size * 0.15
 
             largest_white_spot_size = 0
-            for stat in stats[1:]:  # Skip the first stat because it is the background
+            for stat in stats[1:]:
                 if stat[cv2.CC_STAT_AREA] > largest_white_spot_size:
                     largest_white_spot_size = stat[cv2.CC_STAT_AREA]
 
-            # If the largest white spot is smaller than the threshold, turn it black
             if largest_white_spot_size < white_spot_threshold:
                 for label in range(1, num_labels):
                     if stats[label, cv2.CC_STAT_AREA] == largest_white_spot_size:
-                        cell[labels == label] = 0  # Turn the white spot black
+                        cell[labels == label] = 0
 
         total_pixels = cell.size
         black_pixels = np.count_nonzero(cell == 0)
@@ -179,16 +175,16 @@ class ImagePreprocessor:
         img = cv2.imread(image_path)
         img_corners = img.copy()
         processed_img = self.preprocess(img)
-        cv2.imwrite("preprocessed.png", processed_img)
+        # cv2.imwrite("preprocessed.png", processed_img)
 
         corners = self.find_contours(processed_img, img_corners)
-        cv2.imwrite("corners.png", img_corners)
+        # cv2.imwrite("corners.png", img_corners)
 
         if corners:
             warped, matrix = self.warp_image(corners, img)
             warped_processed = self.preprocess(warped)
-            cv2.imwrite("warped.png", warped)
-            cv2.imwrite("warped_processed.png", warped_processed)
+            # cv2.imwrite("warped.png", warped)
+            # cv2.imwrite("warped_processed.png", warped_processed)
 
             width = warped_processed.shape[0] // 9
             height = warped_processed.shape[1] // 9
@@ -199,20 +195,31 @@ class ImagePreprocessor:
             for cell in cells:
                 if not self.is_mostly_black(cell):
                     non_empty_cells.append(cell)
+                else:
+                    non_empty_cells.append(False)
                     # save cell to file
                     # cv2.imwrite(f"non_empty_cell_{len(non_empty_cells)}.png", cell)
 
-            print(f"Found {len(non_empty_cells)} non-empty cells.")
+            # print(f"Found {len(non_empty_cells)} non-empty cells.")
 
+            digits = []
             for i, cell in enumerate(non_empty_cells):
-                cv2.imwrite("cells/cell_%d.png" % i, cell)
-                digit = self.recognize_digit(cell)
-                print(f"Recognized digit: {digit}")
+                if cell is not False:
+                    # cv2.imwrite("cells/cell_%d.png" % i, cell)
+                    digit = self.recognize_digit(cell)
+                    # print(f"Recognized digit: {digit}")
+                    digits.append(digit[0])
+                else:
+                    digits.append(0)
+
+            digits = np.array(digits).reshape(9, 9)
+            return digits
 
         else:
             print("No corners found")
 
 
 if __name__ == "__main__":
-    preprocessor = ImagePreprocessor("model_3.pkl")
-    preprocessor.process_image("image.jpg")
+    preprocessor = ImagePreprocessor("model_5.pkl")
+    digits = preprocessor.process_image("image.png")
+    print(digits)

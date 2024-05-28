@@ -104,11 +104,9 @@ class DigitRecognizeModel:
 
 if __name__ == "__main__":
     digit_recognizer = DigitRecognizeModel()
-    # data, target = digit_recognizer.load_train_data()
-    # test_data, test_target = digit_recognizer.load_test_data()
+
     data, target = digit_recognizer.load_data()
 
-    # split
     train_data, test_data, train_target, test_target = digit_recognizer.split_data(
         data, target
     )
@@ -117,16 +115,4 @@ if __name__ == "__main__":
     predicted = digit_recognizer.predict(test_data)
     digit_recognizer.evaluate(test_target, predicted)
 
-    # digit_recognizer.visualize(test_data, predicted)
-
-    digit_recognizer.save_model("model_2.pkl")
-    # data_train, target_train = digit_recognizer.load_train_data()
-    # first row of the data
-    # digit_recognizer.train(data_train, target_train)
-
-    # data_test, target_test = digit_recognizer.load_test_data()
-    # predicted = digit_recognizer.predict(data_test)
-
-    # digit_recognizer.evaluate(target_test, predicted)
-    # # digit_recognizer.visualize(data_test, predicted)
-    # digit_recognizer.save_model("model_fix.pkl")
+    digit_recognizer.save_model("model_4.pkl")

@@ -7,6 +7,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.screenmanager import Screen
 from kivy.uix.textinput import TextInput
 
+from screen_views.results_screen import ResultsScreen
 from sudoku_solver import SudokuSolver
 
 
@@ -71,6 +72,23 @@ class ManualInputScreen(Screen):
         self.layout.add_widget(float_layout)
         self.layout.add_widget(solve_button)
 
+    # def solve_sudoku(self, instance):
+    #     sudoku = [
+    #         [int(cell.text) if cell.text else 0 for cell in row] for row in self.inputs
+    #     ]
+
+    #     solver = SudokuSolver(sudoku)
+
+    #     if solver.is_initial_board_valid():
+    #         if solver.solve_sudoku():
+    #             print("\nSolved Sudoku:")
+    #             solver.print_board()
+
+    #         else:
+    #             print("No solution exists.")
+    #     else:
+    #         print("The initial Sudoku board is invalid.")
+
     def solve_sudoku(self, instance):
         sudoku = [
             [int(cell.text) if cell.text else 0 for cell in row] for row in self.inputs
@@ -80,9 +98,10 @@ class ManualInputScreen(Screen):
 
         if solver.is_initial_board_valid():
             if solver.solve_sudoku():
-                print("\nSolved Sudoku:")
-                solver.print_board()
-
+                solved_sudoku = solver.board
+                results_screen = ResultsScreen(solved_sudoku, name="results")
+                self.manager.add_widget(results_screen)
+                self.manager.current = "results"
             else:
                 print("No solution exists.")
         else:
