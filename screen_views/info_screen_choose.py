@@ -1,4 +1,4 @@
-from kivy.graphics import Color, Rectangle
+from kivy.graphics import Color, Line, Rectangle
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -42,6 +42,7 @@ class InfoScreenChoose(Screen):
                 rows=9,
                 size_hint=(None, None),
                 size=(450, 450),
+                spacing=0,
             )
             self.grid_layout.bind(minimum_size=self.grid_layout.setter("size"))
 
@@ -64,9 +65,61 @@ class InfoScreenChoose(Screen):
                         padding=(0, (cell_size - font_size - 3) / 2),
                     )
                     text_input.bind(text=self.validate_digit)
+
+                    with text_input.canvas.before:
+                        Color(0, 0, 0, 1)
+                        text_input.rect = Line(
+                            rectangle=(
+                                text_input.x,
+                                text_input.y,
+                                text_input.width,
+                                text_input.height,
+                            ),
+                            width=0.1,
+                        )
+                    text_input.bind(
+                        pos=self.update_textinput_border,
+                        size=self.update_textinput_border,
+                    )
+
                     self.grid_layout.add_widget(text_input)
                     row_inputs.append(text_input)
                 self.inputs.append(row_inputs)
+
+            with self.grid_layout.canvas.after:
+                Color(0, 0, 0, 1)
+                self.grid_layout.outer_border = Line(
+                    rectangle=(0, 0, cell_size * 9, cell_size * 9), width=2
+                )
+
+                self.grid_layout.subgrid_borders = []
+                for i in range(1, 3):
+                    self.grid_layout.subgrid_borders.append(
+                        Line(
+                            points=[
+                                0,
+                                cell_size * 3 * i,
+                                cell_size * 9,
+                                cell_size * 3 * i,
+                            ],
+                            width=2,
+                        )
+                    )
+                    self.grid_layout.subgrid_borders.append(
+                        Line(
+                            points=[
+                                cell_size * 3 * i,
+                                0,
+                                cell_size * 3 * i,
+                                cell_size * 9,
+                            ],
+                            width=2,
+                        )
+                    )
+
+            self.grid_layout.bind(
+                pos=self.update_grid_borders, size=self.update_grid_borders
+            )
 
             anchor_layout = AnchorLayout(anchor_x="center", anchor_y="center")
             anchor_layout.add_widget(self.grid_layout)
@@ -91,6 +144,46 @@ class InfoScreenChoose(Screen):
         self.rect.pos = instance.pos
         self.rect.size = instance.size
 
+    def update_textinput_border(self, instance, value):
+        instance.rect.points = [
+            instance.x,
+            instance.y,
+            instance.x + instance.width,
+            instance.y,
+            instance.x + instance.width,
+            instance.y + instance.height,
+            instance.x,
+            instance.y + instance.height,
+            instance.x,
+            instance.y,
+        ]
+
+    def update_grid_borders(self, instance, value):
+        cell_size = instance.width / 9
+
+        instance.outer_border.rectangle = (
+            instance.x,
+            instance.y,
+            instance.width,
+            instance.height,
+        )
+
+        for i in range(1, 3):
+            # Update horizontal subgrid borders
+            instance.subgrid_borders[2 * (i - 1)].points = [
+                instance.x,
+                instance.y + cell_size * 3 * i,
+                instance.x + instance.width,
+                instance.y + cell_size * 3 * i,
+            ]
+            # Update vertical subgrid borders
+            instance.subgrid_borders[2 * (i - 1) + 1].points = [
+                instance.x + cell_size * 3 * i,
+                instance.y,
+                instance.x + cell_size * 3 * i,
+                instance.y + instance.height,
+            ]
+
     def dismiss(self, instance):
         self.manager.current = "choose"
 
@@ -111,7 +204,9 @@ class InfoScreenChoose(Screen):
         if solver.is_initial_board_valid():
             if solver.solve_sudoku():
                 solved_sudoku = solver.board
-                results_screen = ResultsScreenChoose(solved_sudoku, name="results_choose")
+                results_screen = ResultsScreenChoose(
+                    solved_sudoku, name="results_choose"
+                )
                 self.manager.add_widget(results_screen)
                 self.manager.current = "results_choose"
             else:
