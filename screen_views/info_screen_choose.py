@@ -12,9 +12,10 @@ from sudoku_solver import SudokuSolver
 
 
 class InfoScreenChoose(Screen):
-    def __init__(self, message, board=None, **kwargs):
+    def __init__(self, message, board=None, wrong=None, **kwargs):
         super(InfoScreenChoose, self).__init__(**kwargs)
         self.layout = BoxLayout(orientation="vertical")
+        self.wrong_tiles = wrong if wrong else []
 
         with self.canvas.before:
             Color(0.615686, 0.517647, 0.666667, 1)
@@ -24,7 +25,6 @@ class InfoScreenChoose(Screen):
         message_label = Label(text=message, size_hint=(1, 0.1))
         self.layout.add_widget(message_label)
 
-        # Add a layout to wrap both board and buttons
         content_layout = BoxLayout(orientation="vertical")
 
         if board:
@@ -51,19 +51,32 @@ class InfoScreenChoose(Screen):
 
             self.inputs = []
 
-            for row in board:
+            for r_id, row in enumerate(board):
                 row_inputs = []
-                for number in row:
-                    text_input = TextInput(
-                        text=str(number) if number != 0 else "",
-                        size_hint=(None, None),
-                        size=(cell_size, cell_size),
-                        multiline=False,
-                        input_filter=self.only_one_digit,
-                        halign="center",
-                        font_size=font_size,
-                        padding=(0, (cell_size - font_size - 3) / 2),
-                    )
+                for c_id, number in enumerate(row):
+                    if (r_id, c_id) in self.wrong_tiles:
+                        text_input = TextInput(
+                            text=str(number) if number != 0 else "",
+                            size_hint=(None, None),
+                            size=(cell_size, cell_size),
+                            multiline=False,
+                            input_filter=self.only_one_digit,
+                            halign="center",
+                            font_size=font_size,
+                            padding=(0, (cell_size - font_size - 3) / 2),
+                            background_color=(1, 0, 0, 0.75),
+                        )
+                    else:
+                        text_input = TextInput(
+                            text=str(number) if number != 0 else "",
+                            size_hint=(None, None),
+                            size=(cell_size, cell_size),
+                            multiline=False,
+                            input_filter=self.only_one_digit,
+                            halign="center",
+                            font_size=font_size,
+                            padding=(0, (cell_size - font_size - 3) / 2),
+                        )
                     text_input.bind(text=self.validate_digit)
 
                     with text_input.canvas.before:
@@ -186,6 +199,7 @@ class InfoScreenChoose(Screen):
 
     def dismiss(self, instance):
         self.manager.current = "choose"
+        self.manager.remove_widget(self)
 
     def only_one_digit(self, substring, from_undo=False):
         return substring if substring in "123456789" else ""
@@ -193,6 +207,8 @@ class InfoScreenChoose(Screen):
     def validate_digit(self, instance, value):
         if len(value) > 1 or (value and value not in "123456789"):
             instance.text = ""
+        if not value:
+            instance.background_color = (1, 1, 1, 1)
 
     def solve_sudoku(self, instance):
         sudoku = [

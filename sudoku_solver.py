@@ -1,6 +1,7 @@
 class SudokuSolver:
     def __init__(self, board):
         self.board = board
+        self.invalid_tiles = []
 
     def is_valid(self, row, col, num):
         for x in range(9):
@@ -19,17 +20,37 @@ class SudokuSolver:
 
         return True
 
+    # def is_initial_board_valid(self):
+    #     self.invalid_tiles = []
+    #     for row in range(9):
+    #         for col in range(9):
+    #             num = self.board[row][col]
+    #             if num not in range(10):
+    #                 return False
+    #             if num != 0:
+    #                 self.board[row][col] = 0
+    #                 if not self.is_valid(row, col, num):
+    #                     return False
+    #                 self.board[row][col] = num
+    #     return True
+
     def is_initial_board_valid(self):
+        self.invalid_tiles = []
+
         for row in range(9):
             for col in range(9):
                 num = self.board[row][col]
                 if num not in range(10):
-                    return False
+                    self.invalid_tiles.append((row, col))
+                    continue
                 if num != 0:
                     self.board[row][col] = 0
                     if not self.is_valid(row, col, num):
-                        return False
+                        self.invalid_tiles.append((row, col))
                     self.board[row][col] = num
+
+        if len(self.invalid_tiles) > 0:
+            return False
         return True
 
     def solve_sudoku(self):

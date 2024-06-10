@@ -151,6 +151,7 @@ class ResultsScreenManual(Screen):
             ]
 
     def go_back(self, instance):
+        self.manager.get_screen("manual").update_tiles()
         self.manager.current = "manual"
         self.manager.transition.direction = "left"
         self.manager.remove_widget(self)
@@ -158,6 +159,7 @@ class ResultsScreenManual(Screen):
     def new_sudoku(self, instance):
         manual_screen = self.manager.get_screen("manual")
         manual_screen.clear_inputs(instance)
+        manual_screen.update_tiles()
         self.manager.current = "manual"
         self.manager.transition.direction = "left"
         self.manager.remove_widget(self)

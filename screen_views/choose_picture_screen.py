@@ -1,3 +1,5 @@
+import os
+
 import cv2
 import joblib
 import numpy as np
@@ -21,7 +23,10 @@ class FileChooserPopup(Popup):
         super(FileChooserPopup, self).__init__(**kwargs)
         self.callback = callback
 
-        file_chooser = FileChooserListView()
+        home_folder = os.path.expanduser("~")
+        initial_path = home_folder if os.path.exists(home_folder) else "/"
+
+        file_chooser = FileChooserListView(path=initial_path)
         file_chooser.bind(on_submit=self.on_submit)
         file_chooser.bind(on_canceled=self.dismiss)
         self.content = file_chooser
@@ -159,6 +164,7 @@ class ChoosePictureScreen(Screen):
                 "The initial Sudoku board is invalid.",
                 name="info_invalid_board",
                 board=sudoku,
+                wrong=solver.invalid_tiles,
             )
             self.manager.add_widget(info_screen)
             self.manager.current = "info_invalid_board"
@@ -166,4 +172,3 @@ class ChoosePictureScreen(Screen):
     def go_back(self, instance):
         self.manager.current = "menu"
         self.manager.transition.direction = "left"
-

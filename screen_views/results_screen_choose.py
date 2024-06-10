@@ -102,7 +102,7 @@ class ResultsScreenChoose(Screen):
 
         buttons_layout = BoxLayout(size_hint=(1, 0.1))
 
-        back_button = Button(text="Go back", size_hint=(1, 1))
+        back_button = Button(text="Choose another picture", size_hint=(1, 1))
         back_button.bind(on_press=self.go_back)
         buttons_layout.add_widget(back_button)
 

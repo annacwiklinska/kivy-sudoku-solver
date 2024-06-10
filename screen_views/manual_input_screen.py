@@ -16,6 +16,7 @@ class ManualInputScreen(Screen):
     def __init__(self, **kwargs):
         super(ManualInputScreen, self).__init__(**kwargs)
         self.layout = BoxLayout(orientation="vertical")
+        self.wrong_tiles = []
         self.add_widget(self.layout)
         self.gui()
 
@@ -52,6 +53,7 @@ class ManualInputScreen(Screen):
                     size=(cell_size, cell_size),
                     font_size=font_size,
                     padding=(0, (cell_size - font_size - 3) / 2),
+                    cursor=(0, 0),
                 )
                 for _ in range(9)
             ]
@@ -140,14 +142,12 @@ class ManualInputScreen(Screen):
         )
 
         for i in range(1, 3):
-            # Update horizontal subgrid borders
             instance.subgrid_borders[2 * (i - 1)].points = [
                 instance.x,
                 instance.y + cell_size * 3 * i,
                 instance.x + instance.width,
                 instance.y + cell_size * 3 * i,
             ]
-            # Update vertical subgrid borders
             instance.subgrid_borders[2 * (i - 1) + 1].points = [
                 instance.x + cell_size * 3 * i,
                 instance.y,
@@ -161,6 +161,20 @@ class ManualInputScreen(Screen):
     def validate_digit(self, instance, value):
         if len(value) > 1 or (value and value not in "123456789"):
             instance.text = ""
+        if not value:
+            instance.background_color = (1, 1, 1, 1)
+
+    def update_wrong_tiles(self):
+        for row_index, row in enumerate(self.inputs):
+            for col_index, cell in enumerate(row):
+                if (row_index, col_index) in self.wrong_tiles:
+                    cell.background_color = (1, 0, 0, 0.75)
+
+    def update_tiles(self):
+        for row_index, row in enumerate(self.inputs):
+            for col_index, cell in enumerate(row):
+                if (row_index, col_index) in self.wrong_tiles:
+                    cell.background_color = (1, 1, 1, 1)
 
     def solve_sudoku(self, instance):
         sudoku = [
@@ -189,6 +203,7 @@ class ManualInputScreen(Screen):
             )
             self.manager.add_widget(info_screen)
             self.manager.current = "info_invalid_board"
+            self.wrong_tiles = solver.invalid_tiles
 
     def clear_inputs(self, instance):
         for row in self.inputs:

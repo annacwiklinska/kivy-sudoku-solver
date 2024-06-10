@@ -28,4 +28,5 @@ class InfoScreenManual(Screen):
         self.rect.size = instance.size
 
     def dismiss(self, instance):
+        self.manager.get_screen("manual").update_wrong_tiles()
         self.manager.current = "manual"
