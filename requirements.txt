@@ -19,7 +19,7 @@ opencv-python==4.11.0.86
 packaging==25.0
 pandas==2.2.3
 pillow==12.2.0
-Pygments==2.19.1
+Pygments==2.20.0
 pyparsing==3.2.3
 pypiwin32==223
 python-dateutil==2.9.0.post0
